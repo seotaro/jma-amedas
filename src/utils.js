@@ -72,7 +72,7 @@ export async function getAmedas(date) {
             precipitation1h: d.precipitation1h && (d.precipitation1h[1] === 0) ? d.precipitation1h[0] : null,
             precipitation3h: d.precipitation3h && (d.precipitation3h[1] === 0) ? d.precipitation3h[0] : null,
             precipitation24h: d.precipitation24h && (d.precipitation24h[1] === 0) ? d.precipitation24h[0] : null,
-            wind: d.wind && d.windDirection && (d.wind[1] === 0) && (d.windDirection[1] === 0) ? [d.wind[0], d.windDirection[0]] : null,
+            wind: d.wind && d.windDirection && (d.wind[1] === 0) && (d.windDirection[1] === 0) ? [d.wind[0], d.windDirection[0] * 360.0 / 16.0] : null,    // 16方位は角度［°］に変換する。
             temp: d.temp && (d.temp[1] === 0) ? d.temp[0] : null,
             sun1h: d.sun1h && (d.sun1h[1] === 0) ? d.sun1h[0] : null,
             snow: d.snow && (d.snow[1] === 0) ? d.snow[0] : null,
