@@ -7,10 +7,10 @@ import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas } from './util
 
 const INITIAL_VIEW_STATE = {
   longitude: 136.0,
-  latitude: 38.0,
+  latitude: 35.0,
   zoom: 5,
   maxZoom: 20,
-  pitch: 60,
+  pitch: 45,
   bearing: 0
 };
 
