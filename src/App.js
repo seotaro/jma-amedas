@@ -68,6 +68,22 @@ function App() {
   }, []);
 
   useEffect(() => {
+    switch (element) {
+      case 'wind':
+        if (layerType !== 'icon') {
+          setLayerType('icon');
+        }
+        break;
+
+      default:
+        if (layerType === 'icon') {
+          setLayerType('gridcell');
+        }
+        break;
+    }
+  }, [element]);
+
+  useEffect(() => {
     (async () => {
       if (!amedas) {
         return;
@@ -108,7 +124,8 @@ function App() {
           />);
 
         } else {
-          // スカラー値
+          // 風以外のスカラー値
+
           const values = amedas.map(x => {
             const normlizedValue = normalize(x[element], settings[element].min, settings[element].max);
             return ({
