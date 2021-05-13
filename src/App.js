@@ -8,7 +8,7 @@ import { theme } from './styles/theme'
 import { ThemeProvider, makeStyles } from "@material-ui/core/styles";
 import DeckGL from '@deck.gl/react';
 import { MapView } from '@deck.gl/core';
-import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer } from '@deck.gl/layers';
+import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer, IconLayer } from '@deck.gl/layers';
 import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas } from './utils';
 import moment from 'moment';
 
@@ -73,34 +73,42 @@ function App() {
         return;
       }
 
+      const size = 2500;
       const layer = (function (element) {
         if (element === 'wind') {
           // 風向・風速はベクトル表現にする。とりあえず column で大きさだけ表す。
           const values = amedas.map(x => {
-            const normlizedValue = x[element] ? normalize(x[element][0], settings[element].min, settings[element].max) : null;
+            const normlizedValue = x[element]
+              ? [normalize(x[element][0], settings[element].min, settings[element].max), x[element][1]]
+              : null;
+
             return ({
               code: x.code,
               name: x.name,
               coordinates: x.coordinates,
               normlizedValue: normlizedValue,
               value: x[element],  // tooltip で表示する。
-              color: normlizedValue ? settings[element].colormap(normlizedValue) : [0, 0, 0, 32],
+              color: normlizedValue ? settings[element].colormap(normlizedValue[0]) : [0, 0, 0, 32],
             })
           });
 
-          return (<GridCellLayer
-            id={'gridcelllayer'}
+          return (< IconLayer id='iconlayer'
             data={values}
             pickable={true}
-            cellSize={5000}
-            extruded={true}
-            elevationScale={50000}
+            iconAtlas={'arrow.png'}
+            iconMapping={'arrow.json'}
+            getIcon={d => (d.normlizedValue && (0.0 < d.normlizedValue[1])) ? 'arrow' : 'dot'}
+            getColor={d => d.color}
             getPosition={d => d.coordinates}
-            getFillColor={d => d.color}
-            getElevation={d => d.normlizedValue}
+            billboard={false}
+            sizeUnits={'meters'}
+            sizeScale={10}
+            getSize={d => size}
+            getAngle={d => d.normlizedValue ? (180.0 - d.normlizedValue[1]) : 0.0}
           />);
 
         } else {
+          // スカラー値
           const values = amedas.map(x => {
             const normlizedValue = normalize(x[element], settings[element].min, settings[element].max);
             return ({
@@ -113,7 +121,6 @@ function App() {
             })
           });
 
-          const size = 2500;
           switch (layerType) {
             case 'gridcell':
               return (<GridCellLayer
