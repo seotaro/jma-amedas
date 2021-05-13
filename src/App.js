@@ -1,16 +1,14 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import Grid from '@material-ui/core/Grid';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { theme } from './styles/theme'
-import { ThemeProvider, withStyles, makeStyles } from "@material-ui/core/styles";
+import { ThemeProvider, makeStyles } from "@material-ui/core/styles";
 import DeckGL from '@deck.gl/react';
 import { MapView } from '@deck.gl/core';
-import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer } from '@deck.gl/layers';
-import { GridLayer, HeatmapLayer, HexagonLayer } from '@deck.gl/aggregation-layers';
+import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer, IconLayer } from '@deck.gl/layers';
 import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas } from './utils';
 import moment from 'moment';
 
@@ -55,6 +53,7 @@ const useStyles = makeStyles(() => ({
 function App() {
   const classes = useStyles();
   const [element, setElement] = useState('temp');
+  const [layerType, setLayerType] = useState('gridcell');
   const [basetime, setBasetime] = useState(null);
   const [amedas, setAmedas] = useState(null);
   const [layer, setLayer] = useState(null);
@@ -69,38 +68,64 @@ function App() {
   }, []);
 
   useEffect(() => {
+    switch (element) {
+      case 'wind':
+        if (layerType !== 'icon') {
+          setLayerType('icon');
+        }
+        break;
+
+      default:
+        if (layerType === 'icon') {
+          setLayerType('gridcell');
+        }
+        break;
+    }
+  }, [element]);
+
+  useEffect(() => {
     (async () => {
       if (!amedas) {
         return;
       }
 
+      const size = 2500;
       const layer = (function (element) {
         if (element === 'wind') {
           // 風向・風速はベクトル表現にする。とりあえず column で大きさだけ表す。
           const values = amedas.map(x => {
-            const normlizedValue = x[element] ? normalize(x[element][0], settings[element].min, settings[element].max) : null;
+            const normlizedValue = x[element]
+              ? [normalize(x[element][0], settings[element].min, settings[element].max), x[element][1]]
+              : null;
+
             return ({
               code: x.code,
               name: x.name,
               coordinates: x.coordinates,
               normlizedValue: normlizedValue,
               value: x[element],  // tooltip で表示する。
-              color: normlizedValue ? settings[element].colormap(normlizedValue) : [0, 0, 0, 32],
+              color: normlizedValue ? settings[element].colormap(normlizedValue[0]) : [0, 0, 0, 32],
             })
           });
 
-          return (<GridCellLayer
-            id={'gridcelllayer'}
+          return (< IconLayer id='iconlayer'
             data={values}
             pickable={true}
-            cellSize={5000}
-            extruded={true}
-            elevationScale={50000}
+            iconAtlas={'arrow.png'}
+            iconMapping={'arrow.json'}
+            getIcon={d => (d.normlizedValue && (0.0 < d.normlizedValue[1])) ? 'arrow' : 'dot'}
+            getColor={d => d.color}
             getPosition={d => d.coordinates}
-            getFillColor={d => d.color}
-            getElevation={d => d.normlizedValue}
+            billboard={false}
+            sizeUnits={'meters'}
+            sizeScale={10}
+            getSize={d => size}
+            getAngle={d => d.normlizedValue ? (180.0 - d.normlizedValue[1]) : 0.0}
           />);
+
         } else {
+          // 風以外のスカラー値
+
           const values = amedas.map(x => {
             const normlizedValue = normalize(x[element], settings[element].min, settings[element].max);
             return ({
@@ -113,25 +138,64 @@ function App() {
             })
           });
 
-          return (<GridCellLayer
-            id={'gridcelllayer'}
-            data={values}
-            pickable={true}
-            cellSize={5000}
-            extruded={true}
-            elevationScale={50000}
-            getPosition={d => d.coordinates}
-            getFillColor={d => d.color}
-            getElevation={d => d.normlizedValue}
-          />);
+          switch (layerType) {
+            case 'gridcell':
+              return (<GridCellLayer
+                id={'gridcelllayer'}
+                data={values}
+                pickable={true}
+                cellSize={size * 2}
+                extruded={true}
+                elevationScale={50000}
+                getPosition={d => d.coordinates}  // セルの中心ではなく bottom-left であることに注意。
+                getFillColor={d => d.color}
+                getElevation={d => d.normlizedValue}
+              />);
+
+            case 'column':
+              return (<ColumnLayer
+                id={'columnlayer'}
+                data={values}
+                pickable={true}
+                diskResolution={20}
+                radius={size}
+                extruded={true}
+                elevationScale={50000}
+                getPosition={d => d.coordinates}
+                getFillColor={d => d.color}
+                getElevation={d => d.normlizedValue}
+              />);
+
+            case 'scatterplot':
+              return (<ScatterplotLayer
+                id={'scatterplotlayer'}
+                data={values}
+                pickable={true}
+                opacity={0.8}
+                filled={true}
+                radiusScale={size}
+                lineWidthMinPixels={1}
+                getPosition={d => d.coordinates}
+                getRadius={d => d.normlizedValue}
+                getFillColor={d => d.color}
+              />);
+          }
         }
       }(element));
 
       setLayer(layer);
     })();
-  }, [amedas, element]);
+  }, [amedas, element, layerType]);
 
-  const items = Object.keys(settings).map(key => <MenuItem key={key} value={key}>{settings[key].name}</MenuItem>);
+  const elementItems = Object.keys(settings).map(key => <MenuItem key={key} value={key}>{settings[key].name}</MenuItem>);
+
+  const layetTypes = {
+    'gridcell': { disabled: (element === 'wind') ? true : false },
+    'column': { disabled: (element === 'wind') ? true : false },
+    'scatterplot': { disabled: (element === 'wind') ? true : false },
+    'icon': { disabled: (element === 'wind') ? false : true }
+  };
+  const layerTypeItems = Object.keys(layetTypes).map(key => <MenuItem key={key} value={key} disabled={layetTypes[key].disabled}>{key}</MenuItem>);
 
   return (
     <Fragment>
@@ -146,7 +210,16 @@ function App() {
               <Select
                 value={element}
                 onChange={e => setElement(e.target.value)} >
-                {items}
+                {elementItems}
+              </Select>
+            </FormControl>
+          </Box>
+          <Box p={0.5}>
+            <FormControl >
+              <Select
+                value={layerType}
+                onChange={e => setLayerType(e.target.value)} >
+                {layerTypeItems}
               </Select>
             </FormControl>
           </Box>
