@@ -104,7 +104,9 @@ function App() {
               coordinates: x.coordinates,
               normlizedValue: normlizedValue,
               value: x[element],  // tooltip で表示する。
-              color: normlizedValue ? settings[element].colormap(normlizedValue[0]) : [0, 0, 0, 32],
+              color: (normlizedValue === null) ? [0, 0, 0, 32] : settings[element].colormap(normlizedValue[0]),
+              icon: ((normlizedValue === null) || (normlizedValue[1] == 0.0)) ? 'dot' : 'arrow',
+              angle: (normlizedValue === null) ? 0.0 : (180.0 - normlizedValue[1]),
             })
           });
 
@@ -113,14 +115,14 @@ function App() {
             pickable={true}
             iconAtlas={'arrow.png'}
             iconMapping={'arrow.json'}
-            getIcon={d => (d.normlizedValue && (0.0 < d.normlizedValue[1])) ? 'arrow' : 'dot'}
+            getIcon={d => d.icon}
             getColor={d => d.color}
             getPosition={d => d.coordinates}
             billboard={false}
             sizeUnits={'meters'}
             sizeScale={10}
             getSize={d => size}
-            getAngle={d => d.normlizedValue ? (180.0 - d.normlizedValue[1]) : 0.0}
+            getAngle={d => d.angle}
           />);
 
         } else {
@@ -134,7 +136,7 @@ function App() {
               coordinates: x.coordinates,
               normlizedValue: normlizedValue,
               value: x[element],  // tooltip で表示する。
-              color: normlizedValue ? settings[element].colormap(normlizedValue) : [0, 0, 0, 32],
+              color: (normlizedValue === null) ? [0, 0, 0, 32] : settings[element].colormap(normlizedValue),
             })
           });
 
