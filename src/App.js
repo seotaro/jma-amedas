@@ -15,18 +15,18 @@ const INITIAL_VIEW_STATE = {
 };
 
 const settings = {
-  'precipitation10m': { name: "10分間降水量", min: 0.0, max: 100.0, offset: 0.0 },
-  'precipitation1h': { name: "1時間降水量", min: 0.0, max: 100.0, offset: 0.0 },
-  'precipitation3h': { name: "3時間降水量", min: 0.0, max: 100.0, offset: 0.0 },
-  'precipitation24h': { name: "24時間降水量", min: 0.0, max: 100.0, offset: 0.0 },
-  'wind': { name: "風向・風速", min: 0.0, max: 100.0, offset: 0.0 },
-  'temp': { name: "気温", min: -10.0, max: 30.0, offset: 0.0, colorFunc: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'sun1h': { name: "日照時間", min: 0.0, max: 100.0, offset: 0.0 },
-  'snow': { name: "積雪深", min: 0.0, max: 100.0, offset: 0.0 },
-  'snow6h': { name: "6時間降雪量", min: 0.0, max: 100.0, offset: 0.0 },
-  'snow12h': { name: "12時間降雪量", min: 0.0, max: 100.0, offset: 0.0 },
-  'snow24h': { name: "24時間降雪量", min: 0.0, max: 100.0, offset: 0.0 },
-  'humidity': { name: "湿度", min: 0.0, max: 100.0, offset: 0.0, colorFunc: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'precipitation10m': { name: "10分間降水量", min: 0.0, max: 100.0 },
+  'precipitation1h': { name: "1時間降水量", min: 0.0, max: 80.0, colorFunc: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'precipitation3h': { name: "3時間降水量", min: 0.0, max: 100.0 },
+  'precipitation24h': { name: "24時間降水量", min: 0.0, max: 100.0 },
+  'wind': { name: "風向・風速", min: 0.0, max: 100.0 },
+  'temp': { name: "気温", min: -10.0, max: 30.0, colorFunc: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'sun1h': { name: "日照時間", min: 0.0, max: 100.0 },
+  'snow': { name: "積雪深", min: 0.0, max: 100.0 },
+  'snow6h': { name: "6時間降雪量", min: 0.0, max: 100.0 },
+  'snow12h': { name: "12時間降雪量", min: 0.0, max: 100.0 },
+  'snow24h': { name: "24時間降雪量", min: 0.0, max: 100.0 },
+  'humidity': { name: "湿度", min: 0.0, max: 100.0, colorFunc: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
 };
 
 function App() {
@@ -39,14 +39,14 @@ function App() {
 
       const layer = (function (element) {
         const values = stations.map(x => {
-          const normlizedValue = x[element] ? normalize(x[element], settings[element].min, settings[element].max) : 0.0;
+          const normlizedValue = normalize(x[element], settings[element].min, settings[element].max);
           return ({
             code: x.code,
             name: x.name,
             coordinates: x.coordinates,
             normlizedValue: normlizedValue,
-            value: x[element],  // tooltip で出力する。
-            color: x[element] ? settings[element].colorFunc(normlizedValue) : [0, 0, 0, 32],
+            value: x[element],  // tooltip で表示する。
+            color: normlizedValue ? settings[element].colorFunc(normlizedValue) : [0, 0, 0, 32],
           })
         });
 
