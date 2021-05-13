@@ -1,1 +1,1 @@
-# jma-amedas
+# JMA AMeDAS
