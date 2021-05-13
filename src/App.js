@@ -3,9 +3,9 @@ import DeckGL from '@deck.gl/react';
 import { MapView } from '@deck.gl/core';
 import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer } from '@deck.gl/layers';
 import { GridLayer, HeatmapLayer, HexagonLayer } from '@deck.gl/aggregation-layers';
-
 import fetch from 'node-fetch';
 import moment from 'moment';
+import { normalize, mix, hsvToRgb, } from './utils'
 
 const TABLE_URL = 'https://www.jma.go.jp/bosai/amedas/const/amedastable.json';
 const LATEST_TIME_URL = 'https://www.jma.go.jp/bosai/amedas/data/latest_time.txt';
@@ -19,35 +19,6 @@ const INITIAL_VIEW_STATE = {
   pitch: 60,
   bearing: 0
 };
-
-const normalize = (value, min, max) => ((value - min) / (max - min));
-const mix = (value, min, max) => (min * (1.0 - value) + max * value);
-
-function hsvToRgb(H, S, V) {
-  if (360.0 <= H) {
-    H = 0.0;
-  }
-
-  const Hi = Math.floor(H / 60.0) % 6;
-  const f = H / 60.0 - Hi;
-
-  const p = V * (1.0 - S);
-  const q = V * (1.0 - S * f);
-  const t = V * (1.0 - S * (1.0 - f));
-
-  let rgb = [0.0, 0.0, 0.0]; // 0.0 〜 1.0
-  switch (Hi) {
-    case 0: rgb = [V, t, p]; break;
-    case 1: rgb = [q, V, p]; break;
-    case 2: rgb = [p, V, t]; break;
-    case 3: rgb = [p, q, V]; break;
-    case 4: rgb = [t, p, V]; break;
-    case 5: rgb = [V, p, q]; break;
-  }
-
-  return rgb.map(x => Math.floor(x * 255)); // 0 〜 255
-}
-
 
 const settings = {
   'precipitation10m': { name: "10分間降水量", min: 0.0, max: 100.0, offset: 0.0 },
