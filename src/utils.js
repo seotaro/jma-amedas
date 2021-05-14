@@ -1,3 +1,4 @@
+import { useLocation, } from 'react-router-dom';
 import fetch from 'node-fetch';
 import moment from 'moment';
 
@@ -83,4 +84,8 @@ export async function getAmedas(date) {
         };
         return station;
     });
+}
+
+export function useQuery() {
+    return new URLSearchParams(useLocation().search);
 }

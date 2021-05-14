@@ -7,9 +7,9 @@ import Typography from '@material-ui/core/Typography';
 import { theme } from './styles/theme'
 import { ThemeProvider, makeStyles } from "@material-ui/core/styles";
 import DeckGL from '@deck.gl/react';
-import { MapView } from '@deck.gl/core';
+import { MapView, _GlobeView as GlobeView } from '@deck.gl/core';
 import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer, IconLayer } from '@deck.gl/layers';
-import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas } from './utils';
+import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas, useQuery } from './utils';
 import moment from 'moment';
 
 const INITIAL_VIEW_STATE = {
@@ -57,6 +57,9 @@ function App() {
   const [basetime, setBasetime] = useState(null);
   const [amedas, setAmedas] = useState(null);
   const [layer, setLayer] = useState(null);
+
+  const query = useQuery();
+  const viewType = query.get('viewType') || 'MapView';
 
   useEffect(() => {
     (async () => {
@@ -113,8 +116,8 @@ function App() {
           return (< IconLayer id='iconlayer'
             data={values}
             pickable={true}
-            iconAtlas={'arrow.png'}
-            iconMapping={'arrow.json'}
+            iconAtlas={'wind-icon.png'}
+            iconMapping={'wind-icon.json'}
             getIcon={d => d.icon}
             getColor={d => d.color}
             getPosition={d => d.coordinates}
@@ -225,6 +228,18 @@ function App() {
               </Select>
             </FormControl>
           </Box>
+          <Box p={0.5}>
+            <FormControl >
+              <Select
+                value={viewType}
+                onChange={e => { window.location.href = `?viewType=${e.target.value}` }} >
+                {[
+                  <MenuItem key={'MapView'} value={'MapView'} >MapView</MenuItem>,
+                  <MenuItem key={'GlobeView'} value={'GlobeView'} >GlobeView</MenuItem>
+                ]}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       </ThemeProvider>
 
@@ -248,7 +263,11 @@ function App() {
 
         {layer}
 
-        <MapView id="map" width="100%" controller={true} repeat={true} />
+        {
+          viewType === 'GlobeView'
+            ? <GlobeView id="map" width="100%" controller={true} resolution={1} />
+            : <MapView id="map" width="100%" controller={true} repeat={true} />
+        }
       </DeckGL>
     </Fragment>
   );
