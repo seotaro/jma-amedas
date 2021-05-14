@@ -249,9 +249,11 @@ function App() {
         getTooltip={
           ({ object }) => object && `${object.name}（${object.code}）: ` +
             (
-              (element === 'wind')
-                ? `${object.value[0]} [${settings[element].unit[0]}], ${object.value[1]} [${settings[element].unit[1]}]`
-                : `${object.value} [${settings[element].unit}]`
+              (object.value === null) ? null : (
+                (element === 'wind')
+                  ? `${object.value[0]} [${settings[element].unit[0]}], ${object.value[1]} [${settings[element].unit[1]}]`
+                  : `${object.value} [${settings[element].unit}]`
+              )
             )
         } >
 
@@ -276,7 +278,7 @@ function App() {
             : <MapView id="map" width="100%" controller={true} repeat={true} />
         }
       </DeckGL>
-    </Fragment>
+    </Fragment >
   );
 }
 
