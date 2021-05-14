@@ -113,8 +113,8 @@ function App() {
           return (< IconLayer id='iconlayer'
             data={values}
             pickable={true}
-            iconAtlas={'arrow.png'}
-            iconMapping={'arrow.json'}
+            iconAtlas={'wind-icon.png'}
+            iconMapping={'wind-icon.json'}
             getIcon={d => d.icon}
             getColor={d => d.color}
             getPosition={d => d.coordinates}
