@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { theme } from './styles/theme'
 import { ThemeProvider, makeStyles } from "@material-ui/core/styles";
 import DeckGL from '@deck.gl/react';
-import { MapView } from '@deck.gl/core';
+import { MapView, _GlobeView as GlobeView } from '@deck.gl/core';
 import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer, IconLayer } from '@deck.gl/layers';
 import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas, useQuery } from './utils';
 import moment from 'moment';
@@ -59,7 +59,7 @@ function App() {
   const [layer, setLayer] = useState(null);
 
   const query = useQuery();
-  const viewType = query.get('viewType') || 'mapView';
+  const viewType = query.get('viewType') || 'MapView';
 
   useEffect(() => {
     (async () => {
@@ -228,6 +228,18 @@ function App() {
               </Select>
             </FormControl>
           </Box>
+          <Box p={0.5}>
+            <FormControl >
+              <Select
+                value={viewType}
+                onChange={e => { window.location.href = `?viewType=${e.target.value}` }} >
+                {[
+                  <MenuItem key={'MapView'} value={'MapView'} >MapView</MenuItem>,
+                  <MenuItem key={'GlobeView'} value={'GlobeView'} >GlobeView</MenuItem>
+                ]}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       </ThemeProvider>
 
@@ -251,7 +263,11 @@ function App() {
 
         {layer}
 
-        <MapView id="map" width="100%" controller={true} repeat={true} />
+        {
+          viewType === 'GlobeView'
+            ? <GlobeView id="map" width="100%" controller={true} resolution={1} />
+            : <MapView id="map" width="100%" controller={true} repeat={true} />
+        }
       </DeckGL>
     </Fragment>
   );
