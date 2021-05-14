@@ -53,7 +53,7 @@ const useStyles = makeStyles(() => ({
 function App() {
   const classes = useStyles();
   const [element, setElement] = useState('temp');
-  const [layerType, setLayerType] = useState('gridcell');
+  const [layerType, setLayerType] = useState('column');
   const [basetime, setBasetime] = useState(null);
   const [amedas, setAmedas] = useState(null);
   const [layer, setLayer] = useState(null);
@@ -80,7 +80,7 @@ function App() {
 
       default:
         if (layerType === 'icon') {
-          setLayerType('gridcell');
+          setLayerType('column');
         }
         break;
     }
@@ -195,8 +195,8 @@ function App() {
   const elementItems = Object.keys(settings).map(key => <MenuItem key={key} value={key}>{settings[key].name}</MenuItem>);
 
   const layetTypes = {
-    'gridcell': { disabled: (element === 'wind') ? true : false },
     'column': { disabled: (element === 'wind') ? true : false },
+    'gridcell': { disabled: (element === 'wind') ? true : false },
     'scatterplot': { disabled: (element === 'wind') ? true : false },
     'icon': { disabled: (element === 'wind') ? false : true }
   };
