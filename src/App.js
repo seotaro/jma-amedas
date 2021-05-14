@@ -9,7 +9,7 @@ import { ThemeProvider, makeStyles } from "@material-ui/core/styles";
 import DeckGL from '@deck.gl/react';
 import { MapView } from '@deck.gl/core';
 import { GeoJsonLayer, SolidPolygonLayer, ScatterplotLayer, ColumnLayer, GridCellLayer, IconLayer } from '@deck.gl/layers';
-import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas } from './utils';
+import { normalize, mix, hsvToRgb, getAmedasLatestTime, getAmedas, useQuery } from './utils';
 import moment from 'moment';
 
 const INITIAL_VIEW_STATE = {
@@ -57,6 +57,9 @@ function App() {
   const [basetime, setBasetime] = useState(null);
   const [amedas, setAmedas] = useState(null);
   const [layer, setLayer] = useState(null);
+
+  const query = useQuery();
+  const viewType = query.get('viewType') || 'mapView';
 
   useEffect(() => {
     (async () => {
