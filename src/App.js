@@ -22,18 +22,18 @@ const INITIAL_VIEW_STATE = {
 };
 
 const settings = {
-  'precipitation10m': { name: "10分間降水量", min: 0.0, max: 40.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'precipitation1h': { name: "1時間降水量", min: 0.0, max: 80.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'precipitation3h': { name: "3時間降水量", min: 0.0, max: 150.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'precipitation24h': { name: "24時間降水量", min: 0.0, max: 300.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'wind': { name: "風向・風速", min: 0.0, max: 25.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'temp': { name: "気温", min: -10.0, max: 30.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'sun1h': { name: "日照時間", min: 0.0, max: 1.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'snow': { name: "積雪深", min: 0.0, max: 200.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'snow6h': { name: "6時間降雪量", min: 0.0, max: 50.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'snow12h': { name: "12時間降雪量", min: 0.0, max: 70.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'snow24h': { name: "24時間降雪量", min: 0.0, max: 100.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
-  'humidity': { name: "湿度", min: 0.0, max: 100.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'precipitation10m': { name: "10分間降水量", unit: 'mm', min: 0.0, max: 40.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'precipitation1h': { name: "1時間降水量", unit: 'mm', min: 0.0, max: 80.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'precipitation3h': { name: "3時間降水量", unit: 'mm', min: 0.0, max: 150.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'precipitation24h': { name: "24時間降水量", unit: 'mm', min: 0.0, max: 300.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'wind': { name: "風向・風速", unit: ['m/s', '°'], min: 0.0, max: 25.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'temp': { name: "気温", unit: '℃', min: -10.0, max: 30.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'sun1h': { name: "日照時間", unit: '時間', min: 0.0, max: 1.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'snow': { name: "積雪深", unit: 'cm', min: 0.0, max: 200.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'snow6h': { name: "6時間降雪量", unit: 'cm', min: 0.0, max: 50.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'snow12h': { name: "12時間降雪量", unit: 'cm', min: 0.0, max: 70.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'snow24h': { name: "24時間降雪量", unit: 'cm', min: 0.0, max: 100.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
+  'humidity': { name: "湿度", unit: '%', min: 0.0, max: 100.0, colormap: ((value) => hsvToRgb(mix(value, 240.0, 0.0), 1.0, 1.0)) },
 };
 
 
@@ -231,7 +231,14 @@ function App() {
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
-        getTooltip={({ object }) => object && `${object.name}（${object.code}）: ${object.value}`} >
+        getTooltip={
+          ({ object }) => object && `${object.name}（${object.code}）: ` +
+            (
+              (element === 'wind')
+                ? `${object.value[0]} [${settings[element].unit[0]}], ${object.value[1]} [${settings[element].unit[1]}]`
+                : `${object.value} [${settings[element].unit}]`
+            )
+        } >
 
         <SolidPolygonLayer id='background-layer'
           data={[[[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]]}
