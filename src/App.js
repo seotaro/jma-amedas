@@ -132,7 +132,10 @@ function App() {
           // 風以外のスカラー値
 
           const values = amedas.map(x => {
-            const normlizedValue = normalize(x[element], settings[element].min, settings[element].max);
+            const normlizedValue = (x[element] === null)
+              ? null
+              : normalize(x[element], settings[element].min, settings[element].max);
+
             return ({
               code: x.code,
               name: x.name,

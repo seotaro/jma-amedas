@@ -6,8 +6,19 @@ const TABLE_URL = 'https://www.jma.go.jp/bosai/amedas/const/amedastable.json';
 const LATEST_TIME_URL = 'https://www.jma.go.jp/bosai/amedas/data/latest_time.txt';
 const DATA_URL = date => `https://www.jma.go.jp/bosai/amedas/data/map/${moment(date).format("YYYYMMDDHHmmss")}.json`;
 
-export const normalize = (value, min, max) => (value === null) ? null : ((value - min) / (max - min));
-export const mix = (value, min, max) => (value === null) ? null : (min * (1.0 - value) + max * value);
+export function normalize(value, min, max) {
+    return (value - min) / (max - min);
+}
+
+export function mix(value, min, max) {
+    if (value < 0.0) {
+        return min;
+    }
+    if (1.0 < value) {
+        return max;
+    }
+    return min * (1.0 - value) + max * value;
+}
 
 export function hsvToRgb(H, S, V) {
     if (360.0 <= H) {
